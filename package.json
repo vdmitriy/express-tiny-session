@@ -5,7 +5,7 @@
     "type": "git",
     "url": "https://github.com/dmitriyv/express-tiny-session"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [
     "connect",
     "express",
@@ -15,7 +15,7 @@
   "dependencies": {
     "lodash": "~3.7.0",
     "debug": "~2.1.3",
-    "on-headers": "git://github.com/vdmitriy/on-headers.git"
+    "on-headers": "~1.0.1"
   },
   "files": [
     "HISTORY.md",
