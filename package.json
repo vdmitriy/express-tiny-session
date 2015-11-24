@@ -3,9 +3,9 @@
   "description": "express cookie session middleware",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dmitriyv/express-tiny-session"
+    "url": "https://github.com/vdmitriy/express-tiny-session"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": [
     "connect",
     "express",
