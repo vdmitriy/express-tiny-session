@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  * @private
@@ -6,6 +5,7 @@
 
 var debug = require('debug')('express-tiny-session');
 var onHeaders = require('on-headers');
+var Buffer = require('safe-buffer').Buffer;
 var _ = require("lodash");
 
 /**
@@ -21,7 +21,7 @@ var _ = require("lodash");
  * @public
  */
 
-module.exports = function(opts){
+module.exports = function (opts) {
 	opts = opts || {};
 
 	var name = opts.name || 'express:sess';
@@ -35,37 +35,35 @@ module.exports = function(opts){
 
 	debug('session options %j', opts);
 
-  return function cookieSession(req, res, next){
-	var session = {},
-		cookieVal = opts.secret ? req.signedCookies[name] : req.cookies[name],
-		data = null;
-	if(cookieVal){
-		try {
-			session = decode(cookieVal);
-			data = _.cloneDeep(session);
+	return function cookieSession(req, res, next) {
+		var session = {},
+			cookieVal = opts.secret ? req.signedCookies[name] : req.cookies[name],
+			data = null;
+		if (cookieVal) {
+			try {
+				session = decode(cookieVal);
+				data = _.cloneDeep(session);
+			} catch (err) { /* */ }
+			if (!_.isPlainObject(session))
+				session = {};
 		}
-		catch (err){
-		}
-		if(!_.isObject(session))
-			session = {};
-	}
-	onHeaders(res, function setHeaders() {
-		if (this.req.session === undefined) {
-			// not accessed
-			return;
-		}
-		if (this.req.session === false) {
-			// remove
-			debug('clear session');
-			this.clearCookie(name);
-		} else if (!_.isEqual(data,this.req.session)) {
-			debug('store session %j',this.req.session);
-			this.cookie(name,encode(this.req.session),opts);
-		}
-	});
-	req.session = session;
-	next();
-  }
+		onHeaders(res, function setHeaders() {
+			if (this.req.session === undefined) {
+				// not accessed
+				return;
+			}
+			if (this.req.session === false) {
+				// remove
+				debug('clear session');
+				this.clearCookie(name);
+			} else if (!_.isEqual(data, this.req.session)) {
+				debug('store session %j', this.req.session);
+				this.cookie(name, encode(this.req.session), opts);
+			}
+		});
+		req.session = session;
+		next();
+	};
 };
 
 
@@ -78,8 +76,8 @@ module.exports = function(opts){
  */
 
 function decode(string) {
-  var body = new Buffer(string, 'base64').toString('utf8');
-  return JSON.parse(body);
+	var body = new Buffer(string, 'base64').toString('utf8');
+	return JSON.parse(body);
 }
 
 /**
@@ -91,6 +89,6 @@ function decode(string) {
  */
 
 function encode(body) {
-  body = JSON.stringify(body);
-  return new Buffer(body).toString('base64');
+	body = JSON.stringify(body);
+	return new Buffer(body).toString('base64');
 }
