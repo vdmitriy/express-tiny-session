@@ -3,10 +3,8 @@
  * @private
  */
 
-var debug = require('debug')('express-tiny-session');
-var onHeaders = require('on-headers');
-var Buffer = require('safe-buffer').Buffer;
-var _ = require("lodash");
+const debug = require('debug')('express-tiny-session');
+const onHeaders = require('on-headers');
 
 /**
  * Create a new cookie session middleware.
@@ -21,31 +19,37 @@ var _ = require("lodash");
  * @public
  */
 
-module.exports = function (opts) {
-	opts = opts || {};
-
-	var name = opts.name || 'express:sess';
+module.exports = function (opts = { }) {
+	const name = opts.name || 'express:sess';
 
 	// defaults
-	if (null == opts.overwrite) opts.overwrite = true;
-	if (null == opts.httpOnly) opts.httpOnly = true;
-	if (null == opts.signed) opts.signed = true;
+	if (null == opts.overwrite)
+		opts.overwrite = true;
 
-	if (!opts.secret && opts.signed) throw new Error('secret key required.');
+	if (null == opts.httpOnly)
+		opts.httpOnly = true;
+
+	if (null == opts.signed)
+		opts.signed = true;
+
+	if (!opts.secret && opts.signed)
+		throw new Error('secret key required.');
 
 	debug('session options %j', opts);
 
 	return function cookieSession(req, res, next) {
-		var session = {},
-			cookieVal = opts.secret ? req.signedCookies[name] : req.cookies[name],
-			data = null;
+		let session = {};
+		const cookieVal = opts.secret ? req.signedCookies[name] : req.cookies[name];
+		let data = null;
 		if (cookieVal) {
 			try {
 				session = decode(cookieVal);
-				data = _.cloneDeep(session);
+				data = JSON.parse(JSON.stringify(session));
 			} catch (err) { /* */ }
-			if (!_.isPlainObject(session))
+
+			if (Object.prototype.toString.call(session) !== '[object Object]') {
 				session = {};
+			}
 		}
 		onHeaders(res, function setHeaders() {
 			if (this.req.session === undefined) {
@@ -56,7 +60,7 @@ module.exports = function (opts) {
 				// remove
 				debug('clear session');
 				this.clearCookie(name);
-			} else if (!_.isEqual(data, this.req.session)) {
+			} else if (JSON.stringify(data) !== JSON.stringify(this.req.session)) {
 				debug('store session %j', this.req.session);
 				this.cookie(name, encode(this.req.session), opts);
 			}
@@ -76,7 +80,7 @@ module.exports = function (opts) {
  */
 
 function decode(string) {
-	var body = new Buffer(string, 'base64').toString('utf8');
+	const body = Buffer.from(string, 'base64').toString('utf8');
 	return JSON.parse(body);
 }
 
@@ -90,5 +94,5 @@ function decode(string) {
 
 function encode(body) {
 	body = JSON.stringify(body);
-	return new Buffer(body).toString('base64');
+	return Buffer.from(body).toString('base64');
 }
