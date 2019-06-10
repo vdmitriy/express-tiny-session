@@ -9,7 +9,7 @@ const onHeaders = require('on-headers');
 /**
  * Create a new cookie session middleware.
  *
- * @param {object} [opts]
+ * @param {Object} [opts]
  * @param {boolean} [opts.httpOnly]
  * @param {string} [opts.name=express:sess] Name of the cookie to use
  * @param {boolean} [opts.overwrite]
@@ -19,7 +19,7 @@ const onHeaders = require('on-headers');
  * @public
  */
 
-module.exports = function (opts = { }) {
+function expressTinySession (opts = { }) {
 	const name = opts.name || 'express:sess';
 
 	// defaults
@@ -38,16 +38,18 @@ module.exports = function (opts = { }) {
 	debug('session options %j', opts);
 
 	return function cookieSession(req, res, next) {
-		let session = {};
 		const cookieVal = opts.secret ? req.signedCookies[name] : req.cookies[name];
+
+		let session = {};
 		let data = null;
+
 		if (cookieVal) {
 			try {
 				session = decode(cookieVal);
 				data = JSON.parse(JSON.stringify(session));
 			} catch (err) { /* */ }
 
-			if (Object.prototype.toString.call(session) !== '[object Object]') {
+			if (!isPlaiObject(session)) {
 				session = {};
 			}
 		}
@@ -60,21 +62,22 @@ module.exports = function (opts = { }) {
 				// remove
 				debug('clear session');
 				this.clearCookie(name);
-			} else if (JSON.stringify(data) !== JSON.stringify(this.req.session)) {
+			} else if (!isEqual(data, this.req.session)) {
 				debug('store session %j', this.req.session);
 				this.cookie(name, encode(this.req.session), opts);
 			}
 		});
+
 		req.session = session;
 		next();
 	};
-};
+}
 
 
 /**
  * Decode the base64 cookie value to an object.
  *
- * @param {String} string
+ * @param {string} string
  * @return {Object}
  * @private
  */
@@ -88,11 +91,37 @@ function decode(string) {
  * Encode an object into a base64-encoded JSON string.
  *
  * @param {Object} body
- * @return {String}
+ * @return {string}
  * @private
  */
 
 function encode(body) {
-	body = JSON.stringify(body);
-	return Buffer.from(body).toString('base64');
+	const string = JSON.stringify(body);
+	return Buffer.from(string).toString('base64');
 }
+
+/**
+ * Comparison function
+ *
+ * @param {Object} data
+ * @param {Object} session
+ * @return {boolean}
+ * @private
+ */
+
+function isEqual(data, session) {
+	return JSON.stringify(data) === JSON.stringify(session);
+}
+
+/**
+ *
+ * @param {Object} obj
+ * @return {boolean}
+ * @private
+ */
+
+function isPlaiObject(obj) {
+	return typeof obj === 'object' && Object.prototype.toString.call(obj) === '[object Object]';
+}
+
+module.exports = expressTinySession;
