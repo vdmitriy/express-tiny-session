@@ -23,9 +23,6 @@ function expressTinySession (opts = { }) {
 	const name = opts.name || 'express:sess';
 
 	// defaults
-	if (null == opts.overwrite)
-		opts.overwrite = true;
-
 	if (null == opts.httpOnly)
 		opts.httpOnly = true;
 
@@ -61,11 +58,12 @@ function expressTinySession (opts = { }) {
 			if (this.req.session === false) {
 				// remove
 				debug('clear session');
-				this.clearCookie(name);
-			} else if (!isEqual(data, this.req.session)) {
-				debug('store session %j', this.req.session);
-				this.cookie(name, encode(this.req.session), opts);
+				this.clearCookie(name, opts);
+				return;
 			}
+			debug('send session %j', this.req.session);
+			this.cookie(name, encode(this.req.session), opts);
+
 		});
 
 		req.session = session;

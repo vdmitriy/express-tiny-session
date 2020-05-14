@@ -1,3 +1,9 @@
+4.0.0 / 2020-05-14
+==================
+
+  * Send session cookie for each response
+  * Remove oudated `overwrite` option
+
 3.0.0 / 2019-06-10
 ==================
 
