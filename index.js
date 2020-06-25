@@ -61,8 +61,10 @@ function expressTinySession (opts = { }) {
 				this.clearCookie(name, opts);
 				return;
 			}
-			debug('send session %j', this.req.session);
-			this.cookie(name, encode(this.req.session), opts);
+			if (!isEqual(data, this.req.session)) {
+				debug('send session %j', this.req.session);
+				this.cookie(name, encode(this.req.session), opts);
+			}
 
 		});
 
