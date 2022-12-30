@@ -32,7 +32,7 @@
     "eslint": "^5.16.0",
     "express": "^4.17.1",
     "istanbul": "^0.4.5",
-    "mocha": "^6.1.4",
+    "mocha": "^10.2.0",
     "supertest": "^4.0.2"
   },
   "scripts": {
